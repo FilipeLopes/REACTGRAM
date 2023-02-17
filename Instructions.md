@@ -72,4 +72,4 @@
     |URL     |http://localhost:5000|http://localhost:5000|
 8. Select again the 'Test Route' and change de field get to ```{{URL}}```. Click to 'Send', if the message 'API Working!' it's working;
 
-## Importing middleware
+## Importing middlewares
