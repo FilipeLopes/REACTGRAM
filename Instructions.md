@@ -104,7 +104,7 @@
 7. Go down to 'Add entries to your IP Access List' (In a real system you should config the IP of the server where your system is);
 8. Click 'Add my Current IP Address' then 'finish and close';
 9. Select the button 'Connect' inside your database to define how you will connect -> Select 'Connect your application';
-10. Copy the code generated and close (like this: 'mongodb+srv://youruser:<password>@cluster0.mz62zxz.mongodb.net/?retryWrites=true&w=majority');
+10. Copy the code generated and close (like this: 'mongodb+srv://yourUser:<password>@cluster0.mz62zxz.mongodb.net/?retryWrites=true&w=majority');
 11. Open the 'db.js' file and write the following bellow '// Connection':
     ```javascript
         const dbUser = process.env.DB_USER;
@@ -175,7 +175,7 @@
     ```
 ## Creating User Controller
 
-1. First of all, open '.env' and include the code ```JWT_SECRET=thisisoursecret``` at the end. (Change the thisisoursecret to a token, you can use a jwt generator on google. It will help you to protect your system);
+1. First of all, open '.env' and include the code ```JWT_SECRET=thisIsOurSecret``` at the end. (Change the thisIsOurSecret to a token, you can use a jwt generator on google. It will help you to protect your system);
 2. Create 'UserController.js' inside 'controllers' folder and type this code:
     ```javascript
         const user = require("../models/User");
@@ -254,5 +254,37 @@
     ```javascript
         //Middlewares
         const validate = require("../middlewares/handleValidation");
+        const {userCreateValidation} = require("../middlewares/userValidations");
     ```
-4. In the same file find the code ```router.post("/register", register);``` and update it to: ```router.post("/register", validate, register);```
+4. In the same file find the code ```router.post("/register", register);``` and update it to: ```router.post("/register",userCreateValidation(), validate, register);```
+
+5. In 'middlewares' create other file called 'userValidations.js' and write:
+    ```javascript
+        const {body} = require("express-validator");
+
+        const userCreateValidation = () => {
+            return [
+                body("name").isString().withMessage("The name is required.").isLength({min: 3}).withMessage("The name requires at least 3 characters."),
+                body("email").isString().withMessage("The email is required").isEmail().withMessage("Insert a valid email."),
+                body("password").isString().withMessage("The password is required").isLength({min: 5}).withMessage("The password requires at least 5 characters."),
+                body("confirmpassword").isString().withMessage("The confirmation password is required").custom((value,{req})=>{
+                    if(value != req.body.password){
+                        throw new Error("The passwords are not the same.");
+                    }
+                    return true;
+                }),
+            ];
+        }
+
+        module.exports = {
+            userCreateValidation,
+        }
+    ```
+    1. To test before send a POST in Postman go to body > select raw > define text to json > and write the code:
+        ```json
+            {
+                "name":"Filipe",
+                "email":"filipe@gmail.com"
+            }
+        ```
+    2. Doing it you can test the errors and the success message;
