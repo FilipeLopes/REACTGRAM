@@ -255,4 +255,4 @@
         //Middlewares
         const validate = require("../middlewares/handleValidation");
     ```
-4. In the same file find the code ```javascript router.post("/register", register);``` and update it to: ```javascript router.post("/register", validate, register);```
+4. In the same file find the code ```router.post("/register", register);``` and update it to: ```router.post("/register", validate, register);```
