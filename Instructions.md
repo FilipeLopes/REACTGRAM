@@ -178,5 +178,51 @@
 1. First of all, open '.env' and include the code ```JWT_SECRET=thisisoursecret``` at the end. (Change the thisisoursecret to a token, you can use a jwt generator on google. It will help you to protect your system);
 2. Create 'UserController.js' inside 'controllers' folder and type this code:
     ```javascript
-        
+        const user = require("../models/User");
+
+        const bcrypt = require("bcryptjs");
+        const jwt = require("jsonwebtoken");
+
+        const jwtSecret = process.env.JWT_SECRET;
+
+        // Generate user token
+        const generateToken = (id) => {
+            return jwt.sign({ id }, jwtSecret, {
+                expiresIn: "7d",
+            });
+        };
+
+        // Register user and sign in
+        const register = async (req,res) => {
+            res.send("Register");
+        }
+
+        module.exports = {
+            register,
+        }
     ```
+3. Access 'routes' folder and create 'UserRoutes.js' and write the code:
+    ```javascript
+        const express = require("express");
+        const router = express.Router();
+
+        //Controller
+        const {register} = require("../controllers/UserController");
+
+        //Routes
+        router.post("/register", register);
+
+        module.exports = router;
+    ```
+4. Open 'Router.js' in 'routes' folder. Find the code ```const router = express();``` and bellow it write the following:
+    ```javascript
+        router.use("/api/users", require("./UserRoutes"));
+    ```
+5. Open the 'Postman' app and access collection > ReactGram. Right click on 'ReactGram' and create a new folder;
+6. Rename to 'Users';
+7. Inside 'Users' create a 'New Request';
+8. Rename to 'Register an user and sign in' > Change 'GET' to 'POST' > Inside the input type '{{URL}}/api/users/register' and send;
+9. If everything went right the message "Register" will show up;
+
+## Starting validations
+
