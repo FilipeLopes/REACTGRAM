@@ -765,6 +765,7 @@
                 res.status(422).json({
                     errors: ["There was a problem. Please try again latter."],
                 });
+                return;
             };
 
             res.status(201).json(newPhoto);
@@ -782,3 +783,366 @@
 14. Click to Send. If everything went right the message with data from this photo will shown up and you can find the photo in 'uploads'>'photos';
 
 ## Deleting photos
+
+1. Into 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        //Remove a photo from DB
+        const deletePhoto = async (req, res) => {
+            const { id } = req.params;
+            const reqUser = req.user;
+
+            try {
+                const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+                //Check if photo exists
+                if (!photo) {
+                    res.status(404).json({ errors: ["Photo not found!"] });
+                    return;
+                };
+
+                //Check if photo belongs to user
+                if (!photo.userId.equals(reqUser._id)) {
+                    res.status(422).json({ errors: ["There was a problem. Please try again later."] });
+                    return;
+                };
+
+                await Photo.findByIdAndDelete(photo._id);
+
+                res.status(200).json({ id: photo._id, message: "The photo has been deleted." });
+            } catch (error) {
+                res.status(404).json({ errors: ["Photo not found!"] });
+                return;
+            }
+
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+            };
+        ```
+2. Access 'routes' > 'PhotoRouter.js' find the tag '//Routes' and include another route following this code:
+    ```javascript
+        router.delete("/:id", authGuard, deletePhoto);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto} = require("../controllers/PhotoController");
+        ```
+3. In Postman > 'ReactGram' > Photos > create a new request and name as 'Delete a photo' > Change from GET to DELETE > In the input type '{{URL}}/api/photos/typeOneId';
+4. Insert one photo and take it's id. Paste it in the step 3 and if everything went right, the success message will appear;
+
+## Getting all photos
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        // Get all photos
+        const getAllPhotos = async (req,res)=> {
+            const photos = await Photo.find({}).sort([["createdAt",-1]]).exec();
+
+            return res.status(200).json(photos);
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.get("/", authGuard, getAllPhotos);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos} = require("../controllers/PhotoController");
+        ```
+3. In Postman > 'ReactGram' > Photos > create a new request and name as 'Get all photos' > In the input type '{{URL}}/api/photos/';
+4. If everything went right you will receive a message with all photos;
+
+## Getting all photos from an specific user
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        // Get user photos
+        const getUserPhotos = async (req, res) => {
+            const {id} = req.params;
+
+            const photos = Photo.find({userId: id}).sort([['createdAt', -1]]).exec();
+
+            return res.status(200).json(photos);
+
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.get("/user/:id", authGuard, getUserPhotos);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos} = require("../controllers/PhotoController");
+        ```
+3. In Postman > 'ReactGram' > Photos > create a new request and name as 'Get user photos' > In the input type '{{URL}}/api/photos/user/typeUserId';
+
+4. If everything went right you will receive a message with all user photos;
+
+## Getting photo by id
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        //Get photo by id
+        const getPhotoById = async (req,res) => {
+            const {id} = req.params;
+            const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+            //check if photo exists
+            if(!photo){
+                res.status(404).json({errors: ["Photo not found."]});
+                return;
+            };
+
+            res.status(200).json(photo);
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+                getPhotoById,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.get("/:id", authGuard, getPhotoById);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById} = require("../controllers/PhotoController");
+        ```
+3. In Postman > 'ReactGram' > Photos > create a new request and name as 'Get photo by id' > In the input type '{{URL}}/api/photos/typePhotoId';
+
+## Updating photo
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        //Update a photo
+        const updatePhoto = async (req, res) => {
+            const { id } = req.params;
+            const { title } = req.body;
+
+            const reqUser = req.user;
+
+            const photo = await Photo.findById(id);
+
+            //Check if photo exists
+            if (!photo) {
+                res.status(404).json({ errors: ["Photo not found"] });
+                return;
+            };
+
+            //Check if photo belongs to user
+            if (!photo.userId.equals(reqUser._id)) {
+                res.status(422).json({ errors: ["There was a problem. Please try again later."] });
+                return;
+            };
+
+            if (title) {
+                photo.title = title;
+            };
+
+            await photo.save();
+
+            res.status(200).json({ photo, message: "Photo successfully updated." });
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+                getPhotoById,
+                updatePhoto,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.put("/:id", authGuard, updatePhoto);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto} = require("../controllers/PhotoController");
+        ```
+3. Go to 'middlewares' > 'PhotoValidation.js' and above the code ```module.exports ={}``` write the following:
+    ```javascript
+        const photoUpdateValidation = () => {
+            return[
+                body("title").optional().isString().withMessage("Title is required.").isLength({min:3}).withMessage("Title needs at least 3 characters."),
+            ];
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                photoInsertValidation,
+                photoUpdateValidation,
+            };
+        ```
+4. Back to 'routes' > 'PhotoRoutes.js' and update the code ```router.put("/:id", authGuard, updatePhoto);``` to:
+    ```javascript
+        router.put("/:id", authGuard, photoUpdateValidation(), validate, updatePhoto);
+    ```
+    1. Na tag '//Middlewares update the code ```const {photoInsertValidation} = require("../middlewares/PhotoValidation");``` to:
+        ```javascript
+            const {photoInsertValidation, photoUpdateValidation} = require("../middlewares/PhotoValidation"); 
+        ```
+5. Open Postman > 'ReactGram' > 'Photos' and create a new request called 'Update a photo' > change from GET to PUT > and include the url   '{{URL}}/api/photos/idOfSomePhoto' > Open body > define to raw > select json > and write the new title and click send. If everything went right we will see the photo with a new title;
+
+## Like photo functionalities
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        // Like functionality
+        const likePhoto = async (req,res)=>{
+            const {id} = req.params;
+            
+            const reqUser = req.user;
+
+            const photo = await Photo.findById(id);
+
+            //Check if photo exists
+            if (!photo) {
+                res.status(404).json({ errors: ["Photo not found"] });
+                return;
+            };
+
+            //Check if user already liked the photo
+            if(photo.likes.includes(reqUser._id)){
+                res.status(422).json({errors: ["You already liked this photo."]});
+                return;
+            };
+
+            //Put user id in likes array
+            photo.likes.push(reqUser._id);
+
+            photo.save();
+
+            res.status(200).json({photoId: id, userId: reqUser._id, message: "the photo has been successfully liked."});
+
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+                getPhotoById,
+                updatePhoto,
+                likePhoto,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.put("/like/:id", authGuard, likePhoto);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto, likePhoto} = require("../controllers/PhotoController");
+        ```
+3. Open Postman > 'ReactGram' > 'Photos' and create a new request called 'Like a photo' > change from GET to PUT > and include the url   '{{URL}}/api/photos/like/idOfSomePhoto';
+4. If everything went right we will see the photo info with a like included;
+
+## Photos comments
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        // Comments functionality
+        const commentPhoto = async (req, res) => {
+            const {id} = req.params;
+            const {comment} = req.body;
+
+            const reqUser = req.user;
+            
+            const user = await User.findById(reqUser._id);
+
+            const photo = await Photo.findById(id);
+
+            //Check if photo exists
+            if (!photo) {
+                res.status(404).json({ errors: ["Photo not found"] });
+                return;
+            };
+
+            //put comment in the array comments
+            const userComment ={
+                comment,
+                userName: user.name,
+                userImage: user.profileImage,
+                userId: user._id
+            }; 
+
+            photo.comments.push(userComment);
+            await photo.save();
+
+            res.status(200).json({
+                comment: userComment,
+                message: "The comment was successfully included.",
+            });
+
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+                getPhotoById,
+                updatePhoto,
+                likePhoto,
+                commentPhoto,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the tag '//Routes' and include other route:
+    ```javascript
+        router.put("/comment/:id", authGuard, commentValidation(), validate, commentPhoto);
+    ```
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto, likePhoto} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto, likePhoto, commentPhoto} = require("../controllers/PhotoController");
+        ```
+3. Access 'middlewares' > 'PhotoValidation.js' and above the code ```module.exports ={}``` write the following:
+    ```javascript
+        const commentValidation = () => {
+            return [
+                body("comment").isString().withMessage("The comment is required."),
+            ];
+        };
+    ```
+4. In 'PhotoRouter.js' find ```const {photoInsertValidation, photoUpdateValidation} = require("../middlewares/PhotoValidation");``` and update to:       
+    ```javascript
+        const {photoInsertValidation, photoUpdateValidation, commentValidation} = require("../middlewares/PhotoValidation"); 
+    ```
+5. Open Postman > 'ReactGram' > 'Photos' and create a new request called 'Comment a photo' > change from GET to PUT > and include the url   '{{URL}}/api/photos/comment/idOfSomePhoto' > Open body > define to raw > select json > and write the comment and click send. If everything went right we will see the photo data with comments;
+
+## Searching photos functionalities
