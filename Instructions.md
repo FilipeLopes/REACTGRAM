@@ -355,3 +355,269 @@
             loginValidation,
         };
     ```
+3. Access 'controllers' > 'UserController.js' and include above ```module.exports ={``` the code:
+    ```javascript
+        //Sign user in
+        const login = (req,res) => {
+            res.send("login");
+        };
+    ```
+4. And inside ```module.exports = {``` update to:
+    ```javascript
+        module.exports = {
+            register,
+            login,
+        };
+    ```
+5. Access 'routes' > 'UserRouter.js' find the code ```const {register} = require("../controllers/UserController");``` and update to:
+    ```javascript
+        const {register, login} = require("../controllers/UserController");
+    ```
+6. In 'UserRouter.js' find the code ```const {userCreateValidation} = require("../middlewares/userValidations");```and update to:
+    ```javascript
+        const {userCreateValidation, loginValidation} = require("../middlewares/userValidations");
+    ```
+7. Bellow the code ```router.post("/register",userCreateValidation(), validate, register);```type this code:
+    ```javascript
+        router.post("/login",loginValidation(), validate, login);
+    ```
+8. Open 'Postman' and create a new request in the folder 'ReactGram'>'Users';
+9. Rename to 'Sign user in'. Change from GET to POST and include in the input '{{URL}}/api/users/login';
+10. If everything is right. On click in SEND we will receive the created message errors;
+11. You can change the values in the body to try to see the every error message;
+
+## User login
+
+1. Go to 'controller' > 'UserController.js' and find ```const login = (req,res) =>{...}``` and update to:
+    ```javascript
+        const login = async (req,res) => {
+            const {email, password} = req.body;
+
+            const user = await User.findOne({email});
+
+            //Check if user exists
+            if(!user){
+                res.status(404).json({errors: ["User not found."]});
+                return;
+            };
+
+            //Check if password matches
+            if(!(await bcrypt.compare(password, user.password))){
+                res.status(422).json({errors: ["Invalid password."]});
+                return;
+            };
+
+            //Return user with token
+            res.status(201).json({
+                _id: user._id,
+                profileImage: user.profileImage,
+                token: generateToken(user._id),
+            });
+        };
+    ```
+2. Try to login with Postman, if everything went right we will receive an id and token;
+
+## Auth validation
+
+1. Inside 'middlewares' create 'authGuard.js' and type this code:
+    ```javascript
+        const User = require("../models/User");
+        const jwt = require("jsonwebtoken");
+        const jwtSecret = process.env.JWT_SECRET;
+
+        const authGuard = async (req, res, next) => {
+            const authHeader = req.headers["authorization"];
+            const token = authHeader && authHeader.split(" ")[1];
+
+            //Check if header has a token
+            if (!token) return res.status(401).json({ errors: ["Denied access!"] });
+
+            //Check if token is valid
+            try {
+                const verified = jwt.verify(token, jwtSecret);
+                req.user = await User.findById(verified.id).select("-password");
+
+                next();
+            } catch (error) {
+                res.status(401).json({ errors: ["Invalid token."] });
+            };
+        };
+
+        module.exports = authGuard;
+    ```
+2. Access 'controllers' > 'UserController.js' and find ```module.exports = {...}```. Above this, write the following:
+    ```javascript
+        //Get current logged in user
+        const getCurrentUser = async(req,res) =>{
+            const user = req.user;
+
+            res.status(200).json(user);
+        };
+    ```
+3. And inside ```module.exports = {}``` update to:
+    ```javascript
+        module.exports = {
+            register,
+            login,
+            getCurrentUser,
+        };
+    ```
+4. Go to 'routes' > 'UserRoutes.js' find the tag //Routes and include the code:
+    ```javascript
+        router.get("/profile", authGuard, getCurrentUser);
+    ```
+5. In the same 'UserRoutes.js' find the tag //Middlewares and include the code:
+    ```javascript
+        const authGuard = require("../middlewares/authGuard");
+    ```
+6. Access Postman 'ReactGram' > 'User' and create a new Request;
+7. Rename to 'Get current user' > define as GET and include in the input '{{URL}}/api/users/profile;
+8. Wen send, the message will be "Denied access';
+9. Click in 'ReactGram' > Authorization and change type from 'No Auth' to 'Bearer Token'. Other input called 'Token' will appear and type something like 'asd' and save (ctrl + s);
+10. Back to 'Get current user' and try to send again. The message will be "Invalid token";
+11. Go to Postman access 'ReactGram' > Users > open "Sign user in" and send with a valid body. Take the token that will show up and go to 'ReactGram' authorization and change the input token with the copied token;
+12. In 'Get current user' try to send again and the message should show you the user values;
+
+## Image upload middleware
+
+1. Inside 'middlewares' create 'imageUpload.js' file;
+2. Type the code:
+    ```javascript
+        const multer = require("multer");
+        const path = require("path");
+
+        // Destination to store image
+        const imageStorage = multer.diskStorage({
+            destination: function(req,file, cb){
+                let folder = "";
+
+                if(req.baseUrl.includes("users")){
+                    folder = "users";
+                } else if(req.baseUrl.includes("photos")){
+                    folder = "photos";
+                };
+
+                cb(null, `uploads/${folder}/`);
+            },
+            filename: (req, file, cb) => {
+                cb(null, Date.now()+path.extname(file.originalname));
+            }
+        });
+
+        const imageUpload = multer ({
+            storage: imageStorage,
+            fileFilter(req, file, cb){
+                if(!file.originalname.match(/\.(png|jpg)$/)){
+                    //upload only png and jpg formats
+                    return cb(new Error("Please, upload only png or jpg files."));
+                };
+
+                cb(undefined,true);
+            }
+        })
+
+        module.exports = {imageUpload};
+    ```
+## Update user middleware
+
+1. Access 'middlewares' > 'userValidations.js' and find the code ```module.exports = {}``` and above this write the following code:
+    ```javascript
+        const userUpdateValidation = () => {
+            return[
+                body("name").optional().isLength({min:3}).withMessage("The name needs at least 3 characters."),
+                body("password").optional().isLength({min:5}).withMessage("The password needs at least 5 characters"),
+            ];
+        };
+    ```
+2. And inside the ```module.exports``` update to:
+    ```javascript
+        module.exports = {
+            userCreateValidation,
+            loginValidation,
+            userUpdateValidation,
+        };
+    ```
+3. Go to 'routes' > 'UserRoutes.js' , find the tag '//Routes' and include the route:
+    ```javascript
+        router.put("/", authGuard, userUpdateValidation(), validate, imageUpload.single("profileImage"), update); 
+    ```
+   1. Inside 'UserRoutes.js' find the tag '//Middlewares' and include ```const {imageUpload} = require("../middlewares/imageUpload");```
+   2. Still in 'UserRoutes.js' find ```const {userCreateValidation, loginValidation} = require("../middlewares/userValidations");``` and update to ```const {userCreateValidation, loginValidation, userUpdateValidation} = require("../middlewares/userValidations");```
+   3. Now find the tag '//Controller' and update this code ```const {register, login, getCurrentUser} = require("../controllers/UserController");``` to ```const {register, login, getCurrentUser, update} = require("../controllers/UserController");```;
+
+4. Go to 'controllers' > 'UserController.js' and above the code ```module.exports ={}``` include:
+    ```javascript
+        // Update a user
+        const update = async (req,res)=>{
+            res.send("Update");
+        };
+    ```
+5. And inside ```module.exports={}``` update to:
+    ```javascript
+        module.exports = {
+            register,
+            login,
+            getCurrentUser,
+            update,
+        };
+    ```
+6. Open Postman and create a new request inside 'ReactGram' > 'Users';
+7. Call it 'Update an user' > change GET to PUT > type inside input '{{URL}}/api/users/ and click send;
+8. If everything went right the message 'Update' will appear;
+
+## Updating user
+
+1. Go to 'controllers' > 'UserController.js' and find the function ```const update = async (req,res) =>{}```. Clean inside the brace {} and update to:
+    ```javascript
+        const {name, password, bio} = req.body;
+
+        let profileImage = null;
+        
+        if(req.file){
+            profileImage = req.file.filename;
+        }
+
+        const reqUser = req.user;
+
+        const user = await User.findById(mongoose.Types.ObjectId(reqUser._id)).select("-password");
+
+        if(name){
+            user.name = name;
+        }
+
+        if(password){
+            //Generate password hash
+            const salt = await bcrypt.genSalt();
+            const passwordHash = await bcrypt.hash(password, salt);
+
+            user.password = passwordHash;
+        };
+        
+        if(profileImage){
+            user.profileImage=profileImage;
+        };
+
+        if(bio){
+            user.bio = bio;
+        }
+        
+        await user.save();
+
+        res.status(200).json(user);
+    ```
+2. Inside 'UserController.js' find the code ```const jwt = require("jsonwebtoken");``` and bellow this code write:
+    ```const mongoose = require("mongoose");```
+3. Open Postman > User > select the request 'Update an user' > go to Body > select 'form-data' and in te table type:
+    |KEY| VALUE|
+    |---|------|
+    |name|typeAnyNameHere|
+    |bio|typeAnyBioHere|
+    |profileImage(change the 'input' to 'file')|selectFileHere|
+4. Click to 'Send'. The user will be shown up, if everything went right the name, bio will be changed and you will can find the image in 'uploads' > 'users';
+
+## Getting user by ID
+
+1. Open 'controllers' > 'UserController.js' and above ```module.exports ={}``` include the following code:
+    ```javascript
+        
+    ```
