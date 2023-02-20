@@ -619,5 +619,45 @@
 
 1. Open 'controllers' > 'UserController.js' and above ```module.exports ={}``` include the following code:
     ```javascript
-        
+        //Get user by id
+        const getUserById = async (req,res) => {
+            const {id} = req.params;
+
+            try {
+                const user = await User.findById(mongoose.Types.ObjectId(id)).select("-password");
+
+                //Check if user exists
+                if (!user) {
+                    res.status(404).json({ errors: ["User not found."] });
+                };
+
+                res.status(200).json(user);
+                
+            } catch (error) {
+                res.status(422).json({ errors: ["User not found."] });
+            };
+        };
     ```
+2. And inside ```module.exports={}``` update to:
+    ```javascript
+        module.exports = {
+            register,
+            login,
+            getCurrentUser,
+            update,
+            getUserById,
+        };
+    ```
+3. Go to 'routes' > 'UserRoutes.js' find the tag '//Routes' and include:
+    ```javascript
+        router.get("/:id", getUserById);
+    ```
+    1. Now find the tag '//Controller' and update the code ```const {register, login, getCurrentUser, update} = require("../controllers/UserController");``` to: 
+        ```javascript
+            const {register, login, getCurrentUser, update, getUserById} = require("../controllers/UserController");
+        ```
+4. Create a new request in 'Postman' > 'ReactGram' > 'Users' a call it as 'Get user by id' > In the input type '{{URL}}/api/users/idHere';
+5. Using a wrong id the error message must show up;
+6. We can take the id from 'Update an user' and use in the input to test. If everything went right the user will be printed;
+
+## Initial config to photos routes
