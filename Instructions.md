@@ -338,4 +338,20 @@ Then change it to:
 
 ## Validation and login
 
-1. 
+1. Access 'middlewares' > 'userValidations.js' and above the code ```module.exports ={``` write the following:
+    ```javascript
+        const loginValidation = () => {
+            return [
+                body("email").isString().withMessage("The email is required.").isEmail().withMessage("Insert a valid email."),
+                body("password").isString().withMessage("The password is required"),
+            ]
+        }; 
+    ```
+And inside the code ```module.exports ={...}``` include:
+    
+    ```javascript
+        module.exports = {
+            userCreateValidation,
+            loginValidation,
+        };
+    ```
