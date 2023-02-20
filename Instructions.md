@@ -661,3 +661,124 @@
 6. We can take the id from 'Update an user' and use in the input to test. If everything went right the user will be printed;
 
 ## Initial config to photos routes
+
+1. In the package 'controllers' create the file 'PhotoController.js';
+2. Inside 'routes' package create the file 'PhotoRoutes.js'
+3. Open 'PhotoRoutes.js' file and write:
+    ```javascript
+        const express = require("express");
+        const router = express.Router();
+
+        //Controller
+
+        //Middlewares
+
+        //Routes
+
+        module.exports = router;
+    ```
+4. Go to 'middlewares' and create the 'PhotoValidation.js' file and write the following code:
+    ```javascript
+        const {body} = require("express-validator");
+
+        const photoInsertValidation = () => {
+            return[
+                body("title").not().equals("undefined").withMessage("Title is required.").isString().withMessage("Title is required.").isLength({min:3}).withMessage("Title requires at least 3 characters"),
+                body("image").custom((value, {req}) => {
+                    if(!req.file){
+                        throw new Error("The image is required.");
+                    };
+                    return true;
+                }),
+            ];
+        };
+
+        module.exports = {
+            photoInsertValidation,
+        };
+    ```
+5. Go to 'routes > 'PhotoRoutes.js' and write inside the tag '//Middlewares':
+    ```javascript
+        const {photoInsertValidation} = require("../middlewares/PhotoValidation");   
+        const authGuard = require("../middlewares/authGuard");
+        const validate = require("../middlewares/handleValidation");
+    ```
+6. Access 'controllers' > 'PhotoController.js' and type:
+    ```javascript
+        const Photo = require("../models/Photo");
+
+        const mongoose = require("mongoose");
+
+        //Insert a photo, with an user related to it
+        const insertPhoto = async(req,res) => {
+            const {title} = req.body;
+            const image = req.file.filename;
+
+            console.log(req.body);
+
+            res.send("Photo insert");
+        };
+
+        module.exports = {
+            insertPhoto,
+        };
+    ```
+7. Access 'routes' > 'PhotoRoutes.js' find the tag '//Controller' and insert:
+    ```javascript
+        const {insertPhoto} = require("../controllers/PhotoController");
+    ```
+    1. Inside 'PhotoRoutes.js' find the tag '//Routes' and include:
+        ```javascript
+            router.post("/", authGuard, imageUpload.single("image"), photoInsertValidation(), validate, insertPhoto); 
+        ```
+    2. Also inside 'PhotoRoutes.js' find the tag '//Middlewares and include:
+        ```javascript
+            const {imageUpload} = require("../middlewares/imageUpload");
+        ```
+8. Access 'routes' > 'Router.js' and find the code ```router.use("/api/users", require("./UserRoutes"));``` and include bellow:
+    ```javascript
+        router.use("/api/photos", require("./PhotoRoutes"));
+    ```
+9. Open Postman > 'ReactGram' > Create a new folder in 'ReactGram' and call it as 'Photos';
+10. In 'Photos' create a new request > name as 'Insert a photo' > Define as POST > In the input write '{{URL}}/api/photos/';
+11. The custom error messages must show up;
+12. Go to 'PhotoController.js' inside 'controllers' and find the function ```const insertPhoto = async...```, update this function to:
+    ```javascript
+        const insertPhoto = async(req,res) => {
+            const {title} = req.body;
+            const image = req.file.filename;
+
+            const reqUser = req.user;
+
+            const user = await User.findById(reqUser._id);
+
+            //Create a photo
+            const newPhoto = await Photo.create({
+                image,
+                title,
+                userId: user._id,
+                userName: user.name,
+            });
+
+            // If photo was create successfully, return data
+            if(!newPhoto){
+                res.status(422).json({
+                    errors: ["There was a problem. Please try again latter."],
+                });
+            };
+
+            res.status(201).json(newPhoto);
+        };
+    ```
+    1. Inside 'PhotoController.js' find the code ```const Photo = require("../models/Photo");``` and write bellow it the following:
+        ```javascript
+            const User = require("../models/User");
+        ```
+13. Go back to Postman > 'Insert a photo' > go to Body > form-data and insert:
+    |KEY| VALUE|
+    |---|------|
+    |title|typeAnyImageNameHere|
+    |image(change the 'input' to 'file')|selectFileHere|
+14. Click to Send. If everything went right the message with data from this photo will shown up and you can find the photo in 'uploads'>'photos';
+
+## Deleting photos
