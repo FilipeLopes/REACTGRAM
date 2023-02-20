@@ -178,7 +178,7 @@
 1. First of all, open '.env' and include the code ```JWT_SECRET=thisIsOurSecret``` at the end. (Change the thisIsOurSecret to a token, you can use a jwt generator on google. It will help you to protect your system);
 2. Create 'UserController.js' inside 'controllers' folder and type this code:
     ```javascript
-        const user = require("../models/User");
+        const User = require("../models/User");
 
         const bcrypt = require("bcryptjs");
         const jwt = require("jsonwebtoken");
@@ -288,3 +288,54 @@
             }
         ```
     2. Doing it you can test the errors and the success message;
+
+## User register
+
+1. Go back to 'controllers'>'UserController.js' and find the code 
+    ```javascript
+        const register = async (req, res) => {
+            res.send("Register");
+        };
+    ```
+Then change it to:
+
+    ```javascript
+        const register = async (req, res) => {
+            const { name, email, password } = req.body;
+
+            //Check if user exists
+            const user = await User.findOne({ email });
+
+            if (user) {
+                res.status(422).json({ errors: ["Please, use another email"] });
+                return;
+            }
+
+            //Generate password hash
+            const salt = await bcrypt.genSalt();
+            const passwordHash = await bcrypt.hash(password, salt);
+
+            //Create user
+            const newUser = await User.create({
+                name,
+                email,
+                password: passwordHash
+            });
+
+            // If user was created successfully, return token
+            if (!newUser) {
+                res.status(422).json({ errors: ["An error has ocurred. Please try again later."] });
+                return;
+            }
+
+            res.status(201).json({
+                _id: newUser._id,
+                token: generateToken(newUser._id),
+            });            
+        };
+    ```
+2. Access Postman and send a POST filling every variable required, if everything went right we will receive a json with id and token;
+
+## Validation and login
+
+1. 
