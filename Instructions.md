@@ -297,7 +297,7 @@
             res.send("Register");
         };
     ```
-Then change it to:
+2. Then change it to:
 
     ```javascript
         const register = async (req, res) => {
@@ -334,7 +334,7 @@ Then change it to:
             });            
         };
     ```
-2. Access Postman and send a POST filling every variable required, if everything went right we will receive a json with id and token;
+3. Access Postman and send a POST filling every variable required, if everything went right we will receive a json with id and token;
 
 ## Validation and login
 
@@ -347,7 +347,7 @@ Then change it to:
             ]
         }; 
     ```
-And inside the code ```module.exports ={...}``` include:
+2. And inside the code ```module.exports ={...}``` include:
     
     ```javascript
         module.exports = {
