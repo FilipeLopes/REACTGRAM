@@ -1,4 +1,4 @@
-# REACT GRAM
+# REACT GRAM - Backend notes
 
 This is a step-by-step to create the backend to this project. 
 ##  Configs
