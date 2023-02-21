@@ -8,14 +8,14 @@ const Navbar = () => {
     return (
         <nav id="nav">
             <Link to="/">ReactGram</Link>
-            <form>
+            <form id="search-form">
                 <BsSearch/>
-                <input type="text" />
+                <input type="text" placeholder="Search" />
             </form>
             <ul id="nav-links">
-                <NavLink to="/"><BsHouseDoorFill /></NavLink>
-                <NavLink to="/login">Login</NavLink>
-                <NavLink to="/register">Register</NavLink>
+                <li><NavLink to="/"><BsHouseDoorFill /></NavLink></li>
+                <li><NavLink to="/login">Login</NavLink></li>
+                <li><NavLink to="/register">Register</NavLink></li>
             </ul>
         </nav>
     )
