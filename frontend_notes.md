@@ -10,3 +10,23 @@ Some notations to remember me the process to create this project.
     ```
         npm i react-icons react-router-dom @reduxjs/toolkit
     ```
+4. Clean all css file and App.js div;
+5. Go to 'src' > 'index.js' and remove ```reportWebVitals();``` and the comments above it;
+    1. Also remove its import like ```import reportWebVitals from './reportWebVitals';```. They won't be necessary;
+
+
+## Font-family
+
+1. Access google > search 'google fonts' > open first link > search 'Roboto' and select it > Select all fonts and copy the link;
+2. Back to 'frontend' > 'public' > open 'index.html' > find the tag <title>ReactGram</title> and paste bellow it;
+3. In 'src' > 'index.css' define the initial global styles as:
+    ```css
+        body {
+            font-family: "Roboto", sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #121212;
+            color: #fafafa;
+        }
+    ```
