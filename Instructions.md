@@ -1,5 +1,6 @@
 # REACT GRAM
 
+This is a step-by-step to create the backend to this project. 
 ##  Configs
 
 1. Create folder 'backend' and 'frontend';
