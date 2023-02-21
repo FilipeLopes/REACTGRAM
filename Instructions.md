@@ -1146,3 +1146,38 @@
 5. Open Postman > 'ReactGram' > 'Photos' and create a new request called 'Comment a photo' > change from GET to PUT > and include the url   '{{URL}}/api/photos/comment/idOfSomePhoto' > Open body > define to raw > select json > and write the comment and click send. If everything went right we will see the photo data with comments;
 
 ## Searching photos functionalities
+
+1. Inside the 'controllers' > 'PhotoController.js' above the code ```module.exports ={}``` write the following:
+    ```javascript
+        //Search photos by title
+        const searchPhotos = async(req,res) => {
+            const {q} = req.query;
+
+            const photos = await Photo.find({title: new RegExp(q,"i")}).exec();
+
+            res.status(200).json(photos);
+        };
+    ```
+    1. And inside this code ```module.exports ={}``` update like this:
+        ```javascript
+            module.exports = {
+                insertPhoto,
+                deletePhoto,
+                getAllPhotos,
+                getUserPhotos,
+                getPhotoById,
+                updatePhoto,
+                likePhoto,
+                commentPhoto,
+                searchPhotos,
+            };
+        ```
+2. Go to 'routes' > 'PhotoRoutes.js' and find the code ```router.get("/user/:id", authGuard, getUserPhotos);``` and include bellow that other route:
+    ```javascript
+        router.get("/search", authGuard, searchPhotos);
+    ``` 
+    1. In 'PhotoRouter.js' find the code ```const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto, likePhoto, commentPhoto} = require("../controllers/PhotoController");``` and update to:
+        ```javascript
+            const {insertPhoto, deletePhoto, getAllPhotos, getUserPhotos, getPhotoById, updatePhoto, likePhoto, commentPhoto, searchPhotos} = require("../controllers/PhotoController");
+        ```
+3. Open Postman > 'ReactGram' > 'Photos' and create a new request called 'Search photos' > and include the url '{{URL}}/api/photos/search?q=somePhotoTitle'. If everything went right we will see a list of photos containing somePhotoTitle;
