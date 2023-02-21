@@ -2,7 +2,9 @@ import "./Auth.css";
 
 const Login = () => {
   return (
-    <div>Login</div>
+    <div id="login">
+      <h2>Login</h2>
+    </div>
   )
 }
 
