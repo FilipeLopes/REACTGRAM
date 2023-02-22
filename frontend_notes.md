@@ -8,7 +8,7 @@ Some notations to remember me the process to create this project.
 2. type: ```cd frontend``` to access the folder were we installed React;
 3. To install some packages that we will use type:
     ```
-        npm i react-icons react-router-dom @reduxjs/toolkit
+        npm i react-icons react-router-dom @reduxjs/toolkit react-redux
     ```
 4. Clean all css file and App.js div;
 5. Go to 'src' > 'index.js' and remove ```reportWebVitals();``` and the comments above it;
@@ -30,3 +30,33 @@ Some notations to remember me the process to create this project.
             color: #fafafa;
         }
     ```
+## Implementing redux
+
+1. Access 'src' > 'index.js';
+2. In 'src' create a file called 'store.js' and type the code:
+    ```javascript
+        import {configureStore} from '@reduxjs/toolkit';
+
+        export const store = configureStore({
+            reducer: {},
+        });
+    ```
+3. Find the code ```import App from "./App";``` and bellow it right the following code:
+    ```javascript
+        //Redux
+        import {Provider} from 'react-redux';
+        import {store} from './store';
+    ```
+    1. Now find the code ```<App />``` and update it to:
+        ```javascript
+            <Provider store={store}>
+                <App />
+            </Provider>
+        ```    
+4. In 'src' create the folders 'services' and 'slices';
+5. 
+
+Creating register form state,
+Implementing redux,
+Config HTTP requisitions,
+
