@@ -229,6 +229,3 @@ Some notations to remember me the process to create this project.
         ```
 10. At this point you can open the project and try to register. In console/network you must see a response with the user token;
 
-Configuring HTTP requisitions,
-Creating authentication service,
-Connection form to reducer
