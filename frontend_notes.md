@@ -105,6 +105,8 @@ Some notations to remember me the process to create this project.
                 if(res){
                     localStorage.setItem("user", JSON.stringify(res));
                 }
+
+                return res;
             } catch (error) {
                 console.log(error);
             }
@@ -228,4 +230,6 @@ Some notations to remember me the process to create this project.
             },[dispatch]);
         ```
 10. At this point you can open the project and try to register. In console/network you must see a response with the user token;
+
+
 
