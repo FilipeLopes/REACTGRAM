@@ -7,13 +7,14 @@ const cors = require("cors");
 const port = process.env.PORT;
 
 const app = express();
+const frontPort = 3000;
 
 //config JSON and form data response
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Solve CORS
-app.use(cors({credentials: true, origin: "http:localhost:3000"}));
+app.use(cors({ credentials: true, origin: `http://localhost:${frontPort}`, optionsSuccessStatus: 200 }));
 
 // Upload directory
 app.use("/uploads", express.static(path.join(__dirname,"/uploads")));

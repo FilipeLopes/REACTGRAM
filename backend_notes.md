@@ -18,7 +18,8 @@ This is a step-by-step to create the backend to this project.
         const port = 5000;
 
         const app = express();
-
+        const frontPort = 3000;
+        
         //config JSON and form data response
         app.use(express.json());
         app.use(express.urlencoded({extended: false}));
@@ -78,7 +79,7 @@ This is a step-by-step to create the backend to this project.
 1. Open 'app.js' file and find te following code ```app.use(express.urlencoded({extended: false}));```. Bellow this code include de following:
     ```javascript
         // Solve CORS
-        app.use(cors({credentials: true, origin: "http:localhost:3000"}));
+        app.use(cors({credentials: true, origin: `http:localhost:${frontPort}`, optionsSuccessStatus: 200 }));
 
         // Upload directory
         app.use("/uploads", express.static(path.join(__dirname,"/uploads")));
