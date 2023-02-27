@@ -3,6 +3,7 @@
         "Filipe",
         "confirmpassword",
         "middlewares",
-        "reduxjs"
+        "reduxjs",
+        "userphotos"
     ]
 }
