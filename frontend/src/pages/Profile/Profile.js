@@ -31,6 +31,7 @@ const Profile = () => {
     const [editId, setEditId] = useState("");
     const [editImage, setEditImage] = useState("");
     const [editTitle, setEditTitle] = useState("");
+    const [imgForm, setImgForm] = useState(false);
 
     // New form and edit form refs
     const newPhotoForm = useRef();
@@ -44,7 +45,7 @@ const Profile = () => {
 
     const handleFile = (e) => {
         const image = e.target.files[0];
-
+        setImgForm(false);
         setImage(image);
     };
 
@@ -56,6 +57,13 @@ const Profile = () => {
 
     const submitHandle = (e) => {
         e.preventDefault();
+
+        console.log(image.name);
+        if (!image.name.match(/\.(jpg|png)$/)) {
+            
+            setImgForm(true);
+            return;
+        }
 
         const photoData = {
             title,
@@ -89,7 +97,7 @@ const Profile = () => {
     };
 
     // Update a photo
-    const handleUpdate = (e) =>{
+    const handleUpdate = (e) => {
         e.preventDefault();
 
         const photoData = {
@@ -104,7 +112,7 @@ const Profile = () => {
 
     // Open edit form
     const handleEdit = (photo) => {
-        if(editPhotoForm.current.classList.contains("hide")){
+        if (editPhotoForm.current.classList.contains("hide")) {
             hideOrShowForms();
         }
 
@@ -148,6 +156,7 @@ const Profile = () => {
                             </label>
                             {!loadingPhoto && <input type="submit" value="Post" />}
                             {loadingPhoto && <input type="submit" disabled value="Wait..." />}
+                            {imgForm && <p className="file-error">Your file must be .png or .jpg!</p>}
                         </form>
                     </div>
                     <div className="edit-photo hide" ref={editPhotoForm}>
@@ -182,10 +191,10 @@ const Profile = () => {
                                         <Link to={`/photos/${photo._id}`}>
                                             <BsFillEyeFill />
                                         </Link>
-                                        <BsPencilFill onClick={()=>{handleEdit(photo)}} />
+                                        <BsPencilFill onClick={() => { handleEdit(photo) }} />
                                         <BsXLg onClick={() => handleDelete(photo._id)} />
                                     </div>
-                                ) : (<Link className="btn" to={`/photos/${photos._id}`}>Open</Link>)}
+                                ) : (<Link to={`/photos/${photo._id}`}><BsFillEyeFill /></Link>)}
                             </div>
                         ))}
                     {photos.length === 0 && <p>There are no published photos</p>}

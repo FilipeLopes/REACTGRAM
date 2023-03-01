@@ -45,7 +45,7 @@ const Search = () => {
         <div id="search">
             <h2>You are searching for: {search}</h2>
             {photos && photos.map((photo) => (
-                <div key={photo.id}>
+                <div key={photo._id}>
                     <PhotoItem photo={photo} />
                     <LikeContainer photo={photo} user={user} handleLike={handleLike} />
                     <Link className="btn" to={`/photos/${photo._id}`}>See more</Link>

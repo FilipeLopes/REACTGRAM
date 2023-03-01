@@ -55,3 +55,9 @@
 .edit-photo img{
     width: 100%;
 }
+
+.file-error {
+    color: #721c24;
+    background-color: #F8D7DA;
+    border-color: #F5C6CB;
+}
